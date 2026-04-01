@@ -1,4 +1,59 @@
-Document of prompts:
+# Prompt documentation (MastersBetTracker)
 
+This file tracks **user prompts** from the parallel Cursor agent session and a **short status** of what that agent did. Updates are based on the saved agent transcript; this is not a live feed—re-open or ask to refresh after new messages.
 
-Lets also go over the plan for how the site can be accessed leading up to the masters. I dont want people to have to make accounts that are participating. I instead want to have a master key that I can email to people as a general sign in for participants. I also want to have a sign in for admin mode, which is where you can go in, and enter peoples picks, lock in picks so they cant be changed, unlock picks, etc. People through non admin sign in should also be able to change their picks until the cutoff date, at which point they need to have locked in their picks or an admin can override and do it for them in extenuating circumstances. 
+**Transcript reference:** [Masters pool planning](a91287b8-205b-4dea-8bb2-501e04c52903)
+
+---
+
+## Other agent — current status (as of last transcript write)
+
+1. **Product / plan:** Masters friends pool with live-ish data via **HTML scrape** (no paid API), **best 4 of 5** picks vs par, **MC +2/+2** Sat/Sun, **−3** if winner pick is champion, tie-break on predicted winning score. **AGENTS.md** and **`.cursor/rules`** were added for handoff.
+2. **Access model (from your prompts):** No participant accounts; **pool master key** for participants; **admin sign-in** for entering anyone’s picks, lock/unlock, overrides after cutoff when needed; participants edit until **cutoff** unless locked.
+3. **Latest task:** You asked whether **“Scaffold Next.js + TS + Tailwind; DB + ORM and env config”** was done. The agent found it **was not** (docs-only repo), then **manually scaffolded** Next.js 15, Tailwind v4, Prisma + SQLite, `.env.example`, minimal Prisma schema, `README` setup steps.
+4. **Environment note (from agent):** `npm install` failed locally due to a **broken Node / ICU (icu4c)** on that machine; you still need a working Node, then `npm install`, `prisma generate`, `prisma db push`, `npm run dev`.
+
+---
+
+## All user prompts (chronological, first occurrence)
+
+1. **Initial product ask** — Create a web app for live Masters leaderboard tracking that maps to a **friends leaderboard** from picking players; attached **screenshot of last year’s rules** as baseline.
+
+2. **Rules precision** — Use screenshot rules exactly (5 picks, 1 winner, predicted winning score tie-break, sum best 4 stroke totals, missed cut Sat/Sun = 74 each, −3 if winner correct), with **scores relative to par** (74 each ⇒ **+2 each**; par 72).
+
+3. **Architecture discussion** — Go over language/framework choices and alternatives.
+
+4. **Stack choice** — Proceed with **Next.js and TypeScript**.
+
+5. **Plan artifact** — Include a **high-level diagram** and walk through **architecture flow**.
+
+6. **API clarification** — Is the golf API something **we build** or **we call**?
+
+7. **Data source** — What source is used for **live scores**?
+
+8. **Scrape path** — Assume **no paid API**; **web scrape** (e.g. Google) for leaderboard snapshot on an interval—what to add to the **plan and architecture**?
+
+9. **Intent check + example** — Confirm the app is **not** a mirror of the public page; want a **friends leaderboard from betting rules**. Requested an **example**: ~10 players, random scores, **3 bettors** to show understanding.
+
+10. **Handoff docs** — Add **AGENTS.md** and/or **Cursor-specific** files so other agents can continue if you’re offline.
+
+11. **Access / admin plan** — No accounts for participants; **master key** emailed for general participant access; separate **admin** sign-in to enter picks, **lock/unlock** picks, etc.; non-admin can change picks until **cutoff**, then locked unless **admin override** in edge cases.
+
+12. **Plan file(s)** — User attached the **Masters Pool Tracker** plan (`masters_pool_tracker_8d2a9207.plan.md`) for review/editing (appears multiple times in transcript).
+
+13. **External context** — **GitHub** repo `mikemilic98/MastersBetTracker` surfaced in context (web search / link).
+
+14. **Scaffold status** — *“Is this part done: Scaffold Next.js + TS + Tailwind; add DB + ORM and env config?”*
+
+---
+
+## Attachments referenced in that session
+
+- Screenshot: Masters rules (`Screenshot_2026-04-01_at_1.51.54_PM-…png` under Cursor project assets).
+- Plan markdown: `.cursor/plans/masters_pool_tracker_8d2a9207.plan.md`.
+
+---
+
+## How to refresh this doc
+
+After more work in the other chat, ask this agent to **re-read the transcript** and append new prompts / status, or copy new prompts here yourself.

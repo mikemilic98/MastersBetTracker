@@ -1,0 +1,16 @@
+// Minimal schema for scaffold — extend with Pool, Participant, Pick, snapshots, etc.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// Placeholder model so `prisma db push` succeeds until full schema is added
+model _ScaffoldMeta {
+  id        Int      @id @default(1)
+  createdAt DateTime @default(now())
+}
