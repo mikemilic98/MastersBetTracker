@@ -1,0 +1,31 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Next.js
+.next/
+out/
+
+# Env
+.env
+.env*.local
+
+# Debug / OS
+npm-debug.log*
+.DS_Store
+*.pem
+
+# Prisma
+prisma/*.db
+prisma/*.db-journal
+
+# Vercel
+.vercel
+
+# Test
+coverage/
+.turbo
+
+# IDE (optional — remove if you want to commit .vscode)
+.idea/

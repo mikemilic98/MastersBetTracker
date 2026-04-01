@@ -1,0 +1,11 @@
+---
+description: MastersBetTracker domain rules, scoring, and ingest expectations
+alwaysApply: true
+---
+
+# MastersBetTracker
+
+- **Product:** Rank **friends** by a **computed pool score** from their picks — **not** by copying the public Masters leaderboard order. External data only feeds **per-player results** (and cut/champion) used in the formula.
+- **Scoring (authoritative):** Per-player total = **sum of four rounds vs par** (par 72 per round); **missed cut** → **+2 vs par Sat + +2 vs par Sun**. Participant score = **sum of best 4 of 5** picked players; if **winner pick = champion**, **−3**. **Tie for first** among friends → **closest predicted winning score** (total strokes) to the champion’s actual total.
+- **Stack:** Next.js + TypeScript; DB for picks + snapshots; **`scoresProvider`** abstraction — **default ingest is HTML scrape** (no paid API required). See **[AGENTS.md](AGENTS.md)** for full handoff detail.
+- **Access:** no user accounts — **pool master key** (shared) + **per-participant edit token** (who can edit which row) + separate **admin key** (cutoff, lock/unlock, enter anyone's picks). See plan + AGENTS.md.

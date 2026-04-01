@@ -1,0 +1,5 @@
+Drilling down on planning decisions: Lets go over some of the architectural decisions for the languages suggested and chosen as well as alternatives 
+
+Understanding the plan: lets include in the plan a high level diagram and go through the flow of how what the higher level architecture looks like 
+
+Project setup: Can we  make an agentmd file and / or cursor specific file to help other agents jump right in with work if I go offline?
