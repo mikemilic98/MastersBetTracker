@@ -52,8 +52,13 @@ npm run dev              # optional: open http://localhost:3000
 Quick health check:
 
 ```bash
-npm run test             # scoring unit tests (Vitest)
+npm run test             # Vitest: scoring + HTML snapshot parser + cache
 ```
+
+### Live scores (HTML scrape)
+
+- **`lib/scores/`** — `ScoresProvider` contract, `fetchHtml`, `parseLeaderboardHtml` (Cheerio; test fixture in `lib/scores/fixtures/`), `ScrapeScoresProvider`, `withSnapshotCache` (TTL).
+- Set `SCRAPE_LEADERBOARD_URL` in `.env` when wiring a real page; production sites need **new selectors** — keep parser changes + fixtures in sync.
 
 ## Scripts
 
