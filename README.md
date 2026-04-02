@@ -35,6 +35,26 @@ Next.js (App Router) + TypeScript + Tailwind CSS + Prisma (SQLite). See [AGENTS.
 
 Open [http://localhost:3000](http://localhost:3000).
 
+## Verify scaffold (before feature work)
+
+Run these in order; all should complete without errors:
+
+```bash
+npm install
+cp .env.example .env   # if you do not already have .env
+npx prisma generate
+npx prisma db push
+npm run lint
+npm run build
+npm run dev              # optional: open http://localhost:3000
+```
+
+Quick health check:
+
+```bash
+npm run test             # scoring unit tests (Vitest)
+```
+
 ## Scripts
 
 | Script            | Description        |
@@ -44,3 +64,5 @@ Open [http://localhost:3000](http://localhost:3000).
 | `npm run lint`    | ESLint              |
 | `npm run db:push` | Sync Prisma schema |
 | `npm run db:studio` | Prisma Studio     |
+| `npm run test`      | Vitest (scoring)  |
+| `npm run test:watch`| Vitest watch mode |
