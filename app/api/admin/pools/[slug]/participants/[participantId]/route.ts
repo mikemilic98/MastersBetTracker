@@ -59,3 +59,24 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
     },
   });
 }
+
+/** Admin-only: delete participant and their picks (cascade). */
+export async function DELETE(_request: NextRequest, context: RouteContext) {
+  if (!isAdminRequest(_request)) {
+    return jsonError("Admin session required", 401);
+  }
+  const { slug, participantId } = await context.params;
+
+  const pool = await prisma.pool.findUnique({ where: { slug } });
+  if (!pool) {
+    return jsonError("Pool not found", 404);
+  }
+
+  const result = await prisma.participant.deleteMany({
+    where: { id: participantId, poolId: pool.id },
+  });
+  if (result.count === 0) {
+    return jsonError("Participant not found", 404);
+  }
+  return jsonOk({ ok: true });
+}

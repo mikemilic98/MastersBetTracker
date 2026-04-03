@@ -11,6 +11,10 @@ export function playerTotalsVsParMapFromSnapshot(
   const m = new Map<string, number>();
   for (const p of snapshot.players) {
     const key = normalizePlayerIdKey(p.nameKey);
+    if (p.tournamentVsPar !== undefined) {
+      m.set(key, p.tournamentVsPar);
+      continue;
+    }
     const total = playerTotalVsPar({
       playerId: key,
       missedCut: p.missedCut,
@@ -44,6 +48,18 @@ export function resolveChampionForScoring(
   if (!leader) {
     throw new Error("Snapshot has no players");
   }
+  if (leader.totalStrokes !== undefined) {
+    return {
+      playerId: normalizePlayerIdKey(leader.nameKey),
+      totalStrokes: leader.totalStrokes,
+    };
+  }
+  if (leader.tournamentVsPar !== undefined) {
+    return {
+      playerId: normalizePlayerIdKey(leader.nameKey),
+      totalStrokes: 4 * ROUND_PAR + leader.tournamentVsPar,
+    };
+  }
   const vs = playerTotalVsPar({
     playerId: normalizePlayerIdKey(leader.nameKey),
     missedCut: leader.missedCut,
@@ -54,10 +70,8 @@ export function resolveChampionForScoring(
       r4: leader.roundsVsPar.r4,
     },
   });
-  const totalStrokes =
-    leader.totalStrokes ?? 4 * ROUND_PAR + vs;
   return {
     playerId: normalizePlayerIdKey(leader.nameKey),
-    totalStrokes,
+    totalStrokes: 4 * ROUND_PAR + vs,
   };
 }

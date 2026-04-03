@@ -11,6 +11,7 @@ const scrapedPlayerSchema = z.object({
     r4: z.number().nullable(),
   }),
   missedCut: z.boolean(),
+  tournamentVsPar: z.number().optional(),
   totalStrokes: z.number().optional(),
 });
 

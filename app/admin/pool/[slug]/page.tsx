@@ -35,6 +35,12 @@ export default function AdminPoolPage({ params }: Props) {
   const [newWinner, setNewWinner] = useState("");
   const [newPicks, setNewPicks] = useState(["", "", "", "", ""]);
   const [creating, setCreating] = useState(false);
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [participantDeleteId, setParticipantDeleteId] = useState<string | null>(
+    null,
+  );
+  const [deletingParticipant, setDeletingParticipant] = useState(false);
 
   const load = useCallback(async () => {
     setErr(null);
@@ -195,6 +201,48 @@ export default function AdminPoolPage({ params }: Props) {
     }
   }
 
+  async function confirmDeleteParticipant() {
+    if (!participantDeleteId) return;
+    setDeletingParticipant(true);
+    setErr(null);
+    try {
+      const res = await fetch(
+        `/api/admin/pools/${encodeURIComponent(slug)}/participants/${encodeURIComponent(participantDeleteId)}`,
+        { method: "DELETE", credentials: "include" },
+      );
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setErr(typeof data.error === "string" ? data.error : "Delete failed");
+        return;
+      }
+      setParticipantDeleteId(null);
+      await load();
+    } finally {
+      setDeletingParticipant(false);
+    }
+  }
+
+  async function confirmDeletePool() {
+    setDeleting(true);
+    setErr(null);
+    try {
+      const res = await fetch(`/api/admin/pools/${encodeURIComponent(slug)}`, {
+        method: "DELETE",
+        credentials: "include",
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setErr(typeof data.error === "string" ? data.error : "Delete failed");
+        return;
+      }
+      setDeleteModalOpen(false);
+      router.push("/admin");
+      router.refresh();
+    } finally {
+      setDeleting(false);
+    }
+  }
+
   if (!pool && !err) {
     return (
       <main className="mx-auto max-w-3xl px-6 py-16 text-neutral-500">
@@ -352,17 +400,41 @@ export default function AdminPoolPage({ params }: Props) {
                     </Link>
                   </p>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => void toggleParticipantLock(p.id, p.locked)}
-                  className="shrink-0 rounded border border-neutral-600 px-2 py-1 text-xs text-neutral-300 hover:bg-neutral-800"
-                >
-                  {p.locked ? "Unlock row" : "Lock row"}
-                </button>
+                <div className="flex shrink-0 flex-wrap gap-2">
+                  <button
+                    type="button"
+                    onClick={() => void toggleParticipantLock(p.id, p.locked)}
+                    className="rounded border border-neutral-600 px-2 py-1 text-xs text-neutral-300 hover:bg-neutral-800"
+                  >
+                    {p.locked ? "Unlock row" : "Lock row"}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setParticipantDeleteId(p.id)}
+                    className="rounded border border-red-900/80 px-2 py-1 text-xs text-red-300 hover:bg-red-950/50"
+                  >
+                    Remove…
+                  </button>
+                </div>
               </div>
             </li>
           ))}
         </ul>
+      </section>
+
+      <section className="mt-10 rounded-lg border border-red-950/60 bg-red-950/20 p-6">
+        <h2 className="text-sm font-medium text-red-200/90">Danger zone</h2>
+        <p className="mt-2 text-xs text-neutral-500">
+          Permanently delete this pool, all participants, picks, and leaderboard
+          snapshots.
+        </p>
+        <button
+          type="button"
+          onClick={() => setDeleteModalOpen(true)}
+          className="mt-4 rounded-md border border-red-800 bg-red-950/40 px-4 py-2 text-sm text-red-200 hover:bg-red-950/70"
+        >
+          Delete pool…
+        </button>
       </section>
 
       <p className="mt-10 text-sm">
@@ -370,6 +442,105 @@ export default function AdminPoolPage({ params }: Props) {
           ← All pools
         </Link>
       </p>
+
+      {participantDeleteId ? (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4"
+          role="presentation"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setParticipantDeleteId(null);
+          }}
+        >
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="delete-participant-title"
+            className="w-full max-w-md rounded-lg border border-neutral-700 bg-neutral-950 p-6 shadow-xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h2
+              id="delete-participant-title"
+              className="text-lg font-semibold text-neutral-100"
+            >
+              Remove participant?
+            </h2>
+            <p className="mt-3 text-sm text-neutral-400">
+              <span className="font-medium text-neutral-200">
+                {participants.find((x) => x.id === participantDeleteId)
+                  ?.displayName ?? "This participant"}
+              </span>{" "}
+              will be removed with all picks. This cannot be undone.
+            </p>
+            <div className="mt-6 flex flex-wrap justify-end gap-3">
+              <button
+                type="button"
+                onClick={() => setParticipantDeleteId(null)}
+                disabled={deletingParticipant}
+                className="rounded-md border border-neutral-600 px-4 py-2 text-sm text-neutral-200 hover:bg-neutral-800 disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={() => void confirmDeleteParticipant()}
+                disabled={deletingParticipant}
+                className="rounded-md bg-red-700 px-4 py-2 text-sm font-medium text-white hover:bg-red-600 disabled:opacity-50"
+              >
+                {deletingParticipant ? "Removing…" : "Yes, remove"}
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
+
+      {deleteModalOpen ? (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4"
+          role="presentation"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setDeleteModalOpen(false);
+          }}
+        >
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="delete-pool-title"
+            className="w-full max-w-md rounded-lg border border-neutral-700 bg-neutral-950 p-6 shadow-xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h2
+              id="delete-pool-title"
+              className="text-lg font-semibold text-neutral-100"
+            >
+              Delete this pool?
+            </h2>
+            <p className="mt-3 text-sm text-neutral-400">
+              <span className="font-medium text-neutral-200">{pool.name}</span>{" "}
+              (<span className="font-mono text-neutral-500">{slug}</span>) will be
+              removed permanently. All participants, picks, and snapshots are
+              deleted. This cannot be undone.
+            </p>
+            <div className="mt-6 flex flex-wrap justify-end gap-3">
+              <button
+                type="button"
+                onClick={() => setDeleteModalOpen(false)}
+                disabled={deleting}
+                className="rounded-md border border-neutral-600 px-4 py-2 text-sm text-neutral-200 hover:bg-neutral-800 disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={() => void confirmDeletePool()}
+                disabled={deleting}
+                className="rounded-md bg-red-700 px-4 py-2 text-sm font-medium text-white hover:bg-red-600 disabled:opacity-50"
+              >
+                {deleting ? "Deleting…" : "Yes, delete pool"}
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </main>
   );
 }

@@ -52,3 +52,15 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
     return jsonError("Pool not found", 404);
   }
 }
+
+export async function DELETE(_request: NextRequest, context: RouteContext) {
+  if (!isAdminRequest(_request)) {
+    return jsonError("Admin session required", 401);
+  }
+  const { slug } = await context.params;
+  const result = await prisma.pool.deleteMany({ where: { slug } });
+  if (result.count === 0) {
+    return jsonError("Pool not found", 404);
+  }
+  return jsonOk({ ok: true });
+}

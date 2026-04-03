@@ -1,6 +1,10 @@
 import { prisma } from "@/lib/prisma";
+import { detectLeaderboardParserKind } from "@/lib/scores/detect-parser";
 import { ScrapeScoresProvider } from "@/lib/scores/scrape-provider";
 import type { Prisma } from "@prisma/client";
+
+const PGA_FETCH_UA =
+  "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36";
 
 /**
  * Fetches HTML leaderboard, parses snapshot, persists for the pool.
@@ -20,7 +24,15 @@ export async function persistLeaderboardSnapshot(poolSlug: string): Promise<{
     throw new Error("Pool not found");
   }
 
-  const provider = new ScrapeScoresProvider({ url });
+  const parser = detectLeaderboardParserKind(url);
+  const provider = new ScrapeScoresProvider({
+    url,
+    parser,
+    fetch:
+      parser === "pga-next-data"
+        ? { userAgent: PGA_FETCH_UA, timeoutMs: 30_000 }
+        : undefined,
+  });
   const snap = await provider.fetchSnapshot();
   await prisma.leaderboardSnapshot.create({
     data: {
