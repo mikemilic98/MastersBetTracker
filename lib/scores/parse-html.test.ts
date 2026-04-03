@@ -14,10 +14,12 @@ describe("parseLeaderboardHtml", () => {
     );
     const snap = parseLeaderboardHtml(html, "https://example.test/leaderboard");
 
-    expect(snap.players).toHaveLength(3);
+    expect(snap.players).toHaveLength(6);
     expect(snap.players[0]?.name).toBe("Scottie Scheffler");
     expect(snap.players[0]?.missedCut).toBe(false);
-    expect(snap.players[2]?.missedCut).toBe(true);
+    expect(snap.players.find((p) => p.name === "Tiger Woods")?.missedCut).toBe(
+      true,
+    );
     expect(snap.champion?.totalStrokes).toBe(280);
     expect(snap.champion?.nameKey).toBe("scottie scheffler");
   });
