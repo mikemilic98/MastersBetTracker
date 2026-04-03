@@ -1,4 +1,5 @@
-// Minimal schema for scaffold — extend with Pool, Participant, Pick, snapshots, etc.
+// Masters pool: participants submit five distinct player picks, one winner designation,
+// and a predicted champion total strokes (tie-break). Snapshots store scraped leaderboard JSON.
 
 generator client {
   provider = "prisma-client-js"
@@ -9,8 +10,63 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// Placeholder model so `prisma db push` succeeds until full schema is added
-model _ScaffoldMeta {
-  id        Int      @id @default(1)
-  createdAt DateTime @default(now())
+model Pool {
+  id           String   @id @default(cuid())
+  slug         String   @unique
+  name         String
+  /// After this time, participant self-edits are rejected unless admin unlocks.
+  cutoffAt     DateTime?
+  picksLocked  Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  participants         Participant[]
+  leaderboardSnapshots LeaderboardSnapshot[]
+}
+
+model Participant {
+  id                     String   @id @default(cuid())
+  poolId                 String
+  pool                   Pool     @relation(fields: [poolId], references: [id], onDelete: Cascade)
+  displayName            String
+  /// Opaque per-row secret for “edit my picks” links (treat like a password).
+  editToken              String   @unique
+  /// Predicted champion total strokes (tie-break vs actual).
+  predictedWinningScore  Int
+  /// Must equal `playerId` on exactly one of this participant’s picks.
+  winnerPickPlayerId     String
+  /// Organizer can lock this row without global pool lock.
+  locked                 Boolean  @default(false)
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime @updatedAt
+
+  picks Pick[]
+
+  @@index([poolId])
+}
+
+/// Five picks per participant; `sortOrder` is 0–4 (display / stable ordering).
+model Pick {
+  id            String @id @default(cuid())
+  participantId String
+  participant   Participant @relation(fields: [participantId], references: [id], onDelete: Cascade)
+  sortOrder     Int
+  /// Stable id aligned with scoring / scrape name keys (see lib/scoring).
+  playerId      String
+
+  @@unique([participantId, sortOrder])
+  @@unique([participantId, playerId])
+  @@index([participantId])
+}
+
+/// Cached HTML-derived leaderboard; `payload` matches LeaderboardSnapshot JSON shape.
+model LeaderboardSnapshot {
+  id        String   @id @default(cuid())
+  poolId    String
+  pool      Pool     @relation(fields: [poolId], references: [id], onDelete: Cascade)
+  fetchedAt DateTime @default(now())
+  sourceUrl String
+  payload   Json
+
+  @@index([poolId, fetchedAt])
 }
