@@ -9,6 +9,27 @@ const bodySchema = z.object({
   slug: z.string().min(1).regex(/^[a-z0-9-]+$/),
 });
 
+export async function GET(request: NextRequest) {
+  if (!isAdminRequest(request)) {
+    return jsonError("Admin session required", 401);
+  }
+  const pools = await prisma.pool.findMany({
+    orderBy: { createdAt: "desc" },
+    include: { _count: { select: { participants: true } } },
+  });
+  return jsonOk({
+    pools: pools.map((p) => ({
+      id: p.id,
+      slug: p.slug,
+      name: p.name,
+      cutoffAt: p.cutoffAt?.toISOString() ?? null,
+      picksLocked: p.picksLocked,
+      participantCount: p._count.participants,
+      createdAt: p.createdAt.toISOString(),
+    })),
+  });
+}
+
 export async function POST(request: NextRequest) {
   if (!isAdminRequest(request)) {
     return jsonError("Admin session required", 401);

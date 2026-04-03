@@ -26,6 +26,9 @@ prisma/*.db-journal
 # Test
 coverage/
 .turbo
+/test-results/
+/playwright-report/
+/blob-report/
 
 # IDE (optional — remove if you want to commit .vscode)
 .idea/
